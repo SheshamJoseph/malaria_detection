@@ -1,2 +1,5 @@
 cell_images/
 assets/
+venv/
+.python-version
+__pycache__/
