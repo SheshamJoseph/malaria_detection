@@ -68,9 +68,9 @@ def display_results_single(confidence: float, inference_time: float, threshold: 
     st.subheader("🔎 Prediction Results")
     
     if confidence >= threshold:
-        st.error(f"**Parasitized** (Confidence: {confidence:.2%})")
-    else:
         st.success(f"**Uninfected** (Confidence: {confidence:.2%})")
+    else:
+        st.error(f"**Parasitized** (Confidence: {confidence:.2%})")
     
     st.write(f"**⏱ Inference Time:** {inference_time:.2f} ms")
     

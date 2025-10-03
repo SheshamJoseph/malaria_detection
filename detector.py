@@ -49,9 +49,9 @@ class MalariaDetector:
     def classify_cell(self, confidence: float, threshold: float = 0.5) -> Tuple[str, str]:
         """Classify cell based on confidence score."""
         if confidence >= threshold:
-            return "Parasitized", "red"
-        else:
             return "Uninfected", "green"
+        else:
+            return "Parasitized", "red"
 
 
 class SlideAnalyzer:
