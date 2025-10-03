@@ -101,40 +101,36 @@ class SlideAnalyzer:
         
         return Image.fromarray(cv2.cvtColor(cv_slide, cv2.COLOR_BGR2RGB))
     
-    def detect_cells_in_slide(self, slide_image: Image.Image) -> List[Image.Image]:
-        """Detect and extract individual cells from a slide image."""
-        # Convert to OpenCV format
+    def  detect_cells_in_slide(self, slide_image: Image.Image) -> List[Image.Image]:
         slide_cv = cv2.cvtColor(np.array(slide_image), cv2.COLOR_RGB2BGR)
-        
-        # Convert to grayscale
         gray = cv2.cvtColor(slide_cv, cv2.COLOR_BGR2GRAY)
-        
-        # Apply Gaussian blur
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        
-        # Threshold using Otsu's method
+
+        # Threshold with Otsu
         _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-        
+
+        # Morphological opening to remove small noise
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        opened = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
+
         # Find contours
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
+        contours, _ = cv2.findContours(opened, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
         extracted_cells = []
-        min_area = 1000  # Minimum area to be considered a cell
-        
+        min_area = 500  # lowered for small cells
+
         for contour in contours:
             area = cv2.contourArea(contour)
             if area > min_area:
                 x, y, w, h = cv2.boundingRect(contour)
-                
-                # Add padding and extract ROI
-                padding = 10
+                padding = 5
                 x = max(0, x - padding)
                 y = max(0, y - padding)
                 w = min(slide_cv.shape[1] - x, w + 2 * padding)
                 h = min(slide_cv.shape[0] - y, h + 2 * padding)
-                
+
                 cell_roi = slide_cv[y:y+h, x:x+w]
                 cell_pil = Image.fromarray(cv2.cvtColor(cell_roi, cv2.COLOR_BGR2RGB))
                 extracted_cells.append(cell_pil)
-        
+
         return extracted_cells
