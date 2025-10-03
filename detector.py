@@ -48,7 +48,7 @@ class MalariaDetector:
     
     def classify_cell(self, confidence: float, threshold: float = 0.5) -> Tuple[str, str]:
         """Classify cell based on confidence score."""
-        if confidence < threshold:
+        if confidence >= threshold:
             return "Parasitized", "red"
         else:
             return "Uninfected", "green"
@@ -81,9 +81,17 @@ class SlideAnalyzer:
             cell_cv = cv2.cvtColor(np.array(cell_img), cv2.COLOR_RGB2BGR)
             
             # Random position (with border padding)
-            pad = 100
+            # Inside SlideAnalyzer.create_synthetic_slide
+            pad = 20  # allow cells closer to edges
             x = random.randint(pad, self.slide_size[0] - cell_cv.shape[1] - pad)
             y = random.randint(pad, self.slide_size[1] - cell_cv.shape[0] - pad)
+
+            # apply rotation/scale for diversity
+            angle = random.randint(0, 360)
+            scale = random.uniform(0.8, 1.2)
+            (h, w) = cell_cv.shape[:2]
+            M = cv2.getRotationMatrix2D((w//2, h//2), angle, scale)
+            cell_cv = cv2.warpAffine(cell_cv, M, (w, h), borderMode=cv2.BORDER_REFLECT)
             
             # Simple overlay (in real implementation, you'd do proper blending)
             try:
